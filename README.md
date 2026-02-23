@@ -77,10 +77,15 @@ Your service should now be running at `http://localhost:3000/image`.
 
 The service is configured via environment variables:
 
-| Variable           | Description                                                      | Default |
-| :----------------- | :--------------------------------------------------------------- | :------ |
-| `SHARED_ALBUM_URL` | **Required**. The URL of your public Google Photos shared album. | -       |
-| `PORT`             | The port the server will listen on.                              | `3000`  |
+| Variable           | Description                                                                     | Default  |
+| :----------------- | :------------------------------------------------------------------------------ | :------- |
+| `SHARED_ALBUM_URL` | **Required**. A comma-separated list of public Google Photos shared album URLs. | -        |
+| `PORT`             | The port the server will listen on.                                             | `3000`   |
+| `IMAGE_WIDTH`      | Target width of the generated e-ink image.                                      | `800`    |
+| `IMAGE_HEIGHT`     | Target height of the generated e-ink image.                                     | `480`    |
+| `DITHER_MODE`      | Algorithm used for dithering (e.g., `STUCKI`, `FLOYDSTEINBERG`, etc.).          | `STUCKI` |
+| `LANDSCAPE_ONLY`   | Whether to automatically skip portrait and square images (`true`/`false`).      | `true`   |
+| `CROP_STRATEGY`    | How to crop images (`CENTER`, `ATTENTION`, `ENTROPY`, `TOP`, `LEFT`, etc.).     | `CENTER` |
 
 ## 📡 API Reference
 
