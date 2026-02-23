@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 import { ditherImage, ColorScheme, DitherMode } from '@opendisplay/epaper-dithering';
 import { create } from 'flat-cache';
+import { isLandscapeOnly } from './config.js';
 
 // Blocklist (videos, portrait photos, etc.)
 export const deps = {
@@ -30,7 +31,7 @@ export async function processImage(imageUrl, options = {}) {
         return null;
     }
 
-    const landscapeOnly = process.env.LANDSCAPE_ONLY !== 'false'; // Default to true
+    const landscapeOnly = isLandscapeOnly();
 
     const longestSide = landscapeOnly 
         ? Math.max(WIDTH, Math.round(HEIGHT * 16/9)) // Ensure up to 16:9 ratio fill screen height

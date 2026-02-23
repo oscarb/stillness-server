@@ -1,6 +1,7 @@
 import NodeCache from '@cacheable/node-cache';
 import { fetchImageUrls } from 'google-photos-album-image-url-fetch';
 import { scrapeGooglePhotos } from 'google-photos-scraper';
+import { isLandscapeOnly } from './config.js';
 
 // Cache album meta data
 import { create } from 'flat-cache';
@@ -53,7 +54,7 @@ export async function getAlbumImageUrls(albumUrl) {
       // If we validly got < 300, we proceed. 
       if (images.length < 300) {
           // Success! Map to URLs and return.
-          const landscapeOnly = process.env.LANDSCAPE_ONLY !== 'false'; // Default to true
+          const landscapeOnly = isLandscapeOnly();
           const urls = images
             .filter(image => landscapeOnly ? image.width > image.height : true)
             .map(image => image.url);
