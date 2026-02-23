@@ -132,7 +132,7 @@ export async function processImage(imageUrl, options = {}) {
     // Let's map indices to 0 and 255 for a grayscale image.
     
     // Create a new buffer for the grayscale data
-    const grayscaleData = Buffer.alloc(expectedSize);;
+    const grayscaleData = Buffer.alloc(expectedSize);
     for (let i = 0; i < expectedSize; i++) {
         // Assuming palette[0] is black and palette[1] is white, or similar.
         // Usually index 0 -> 0x00, index 1 -> 0xFF.
