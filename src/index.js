@@ -3,19 +3,19 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 
-import { getAlbumImages } from './scraper.js';
+import { getAlbumImageUrls } from './scraper.js';
 import { processImage } from './processor.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ALBUM_URL = process.env.SHARED_ALBUM_URL;
+const ALBUM_URLS = process.env.SHARED_ALBUM_URL ? process.env.SHARED_ALBUM_URL.split(',').map(url => url.trim()) : [];
 const NEXT_IMAGE_PATH = path.join(process.cwd(), 'data', '_next.png');
 const TEMP_NEXT_IMAGE_PATH = path.join(process.cwd(), 'data', '_temp_next.png');
 
-if (!ALBUM_URL) {
-  console.error('Error: SHARED_ALBUM_URL environment variable is not set.');
+if (ALBUM_URLS.length === 0) {
+  console.error('Error: SHARED_ALBUM_URL environment variable is not set or empty.');
   process.exit(1);
 }
 
@@ -39,8 +39,11 @@ async function generateNextImage() {
     const startTime = Date.now();
     console.log('Generating next image...');
     try {
-        const urls = await getAlbumImages(ALBUM_URL);
-        
+        const results = await Promise.allSettled(ALBUM_URLS.map(url => getAlbumImageUrls(url)));
+        const urls = results
+            .filter(result => result.status === 'fulfilled')
+            .flatMap(result => result.value);
+
         // Pick a random URL and try to process it
         // If processing returns null (e.g. portrait), try another one.
         // Limit retries to avoid infinite loops.
@@ -53,6 +56,8 @@ async function generateNextImage() {
             console.error('No URLs found in album');
             return;
         }
+
+        console.log('Found ' + urls.length + ' images in ' + (ALBUM_URLS.length === 1 ? ' one album' : ALBUM_URLS.length + ' albums'));
 
         while (attempts < maxAttempts && !isShuttingDown) {
             const randomIndex = Math.floor(Math.random() * urls.length);
@@ -147,7 +152,7 @@ app.get('/image', async (req, res) => {
 
 const server = app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Monitoring album: ${ALBUM_URL}`);
+  console.log(`Monitoring albums: \n  - ${ALBUM_URLS.join('\n  - ')}`);
 
   // Generate initial image on startup if missing
   if (!fs.existsSync(NEXT_IMAGE_PATH)) {

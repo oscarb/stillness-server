@@ -13,12 +13,13 @@ const URL_CACHE_KEY = 'album_urls';
 // Prevent crashes in Docker/Non-TTY environments
 ['clearLine', 'cursorTo'].forEach(fn => process.stdout[fn] ||= () => {});
 
-export async function getAlbumImages(albumUrl) {
+export async function getAlbumImageUrls(albumUrl) {
 
+  const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
   // Check url cache first
-  const cachedUrls = urlCache.get(URL_CACHE_KEY);
+  const cachedUrls = urlCache.get(urlCacheKey);
   if (cachedUrls) {
-    console.log(`Using cached URLs (${cachedUrls.length})`);
+    console.log(`Using cached URLs (${cachedUrls.length}) for album ${albumUrl}`);
     return cachedUrls;
   }
 
@@ -52,8 +53,8 @@ export async function getAlbumImages(albumUrl) {
             .filter(image => landscapeOnly ? image.width > image.height : true)
             .map(image => image.url);
           
-          console.log(`Using ${urls.length} images from lightweight fetch.`);
-          urlCache.set(URL_CACHE_KEY, urls);
+          console.log(`Using ${urls.length} images from lightweight fetch for album ${albumUrl}.`);
+          urlCache.set(urlCacheKey, urls);
 
           // Update album metadata
           albumMetaDataCache.setKey(albumUrl, { size: images.length });
@@ -74,14 +75,15 @@ export async function getAlbumImages(albumUrl) {
 
 async function performHeavyScrape(albumUrl) {
     try {
-        console.log('Attempting heavy scrape...');
+        console.log(`Attempting heavy scrape for album ${albumUrl}...`);
         const imageUrls = await scrapeGooglePhotos(albumUrl);
         console.log("\n"); // Add a newline for better spacing
 
         if (!imageUrls || imageUrls.length === 0) {
-            throw new Error('No imageUrls found in album (Scraper)');
+            throw new Error(`No imageUrls found in album (Scraper) ${albumUrl}`);
         }
-        urlCache.set(URL_CACHE_KEY, imageUrls);
+        const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
+        urlCache.set(urlCacheKey, imageUrls);
 
         // Update album metadata
         albumMetaDataCache.setKey(albumUrl, { size: imageUrls.length });
