@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stillness</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #0d1117;
+        --surface-color: #161b22;
+        --surface-hover: #21262d;
+        --border-color: #30363d;
+        --text-primary: #c9d1d9;
+        --text-secondary: #8b949e;
+        --accent-color: #58a6ff;
+        --success-color: #2ea043;
+        --danger-color: #f85149;
+        --radius: 16px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: white;
+        letter-spacing: -0.5px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        background: rgba(46, 160, 67, 0.1);
+        color: var(--success-color);
+        border: 1px solid rgba(46, 160, 67, 0.4);
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: var(--transition);
+      }
+
+      .status-badge.error {
+        background: rgba(248, 81, 73, 0.1);
+        color: var(--danger-color);
+        border-color: rgba(248, 81, 73, 0.4);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background-color: currentColor;
+        border-radius: 50%;
+        margin-right: 8px;
+        box-shadow: 0 0 8px currentColor;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+      }
+
+      .card {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 24px;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        border-color: var(--text-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      .card-title {
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        line-height: 1.2;
+      }
+
+      .card-subtext {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+      }
+
+      .images-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+      }
+
+      @media (max-width: 768px) {
+        .images-section {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .image-card {
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .image-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+
+      .image-container {
+        background: #000;
+        border-radius: 0px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .image-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: opacity 0.3s ease;
+      }
+
+      .image-placeholder {
+        position: absolute;
+        color: var(--text-secondary);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .config-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        margin-top: 16px;
+      }
+
+      .config-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 14px;
+      }
+
+      @media (min-width: 600px) {
+        .config-item {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+
+      .config-item:last-child {
+        border-bottom: none;
+      }
+
+      .config-label {
+        color: var(--text-secondary);
+      }
+
+      .config-value {
+        color: white;
+        font-family: monospace;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .pulse {
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          box-shadow: 0 0 0 0 rgba(46, 160, 67, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(46, 160, 67, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(46, 160, 67, 0);
+        }
+      }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border-color);
+        border-top-color: var(--accent-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .load-next-btn {
+        background: none;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-family: inherit;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .load-next-btn:hover {
+        background: var(--surface-hover);
+        border-color: var(--text-secondary);
+        color: white;
+      }
+
+      .load-next-btn:active {
+        transform: scale(0.98);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div>
+          <h1>Stillness</h1>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center">
+          <button
+            class="load-next-btn"
+            onclick="loadNextImage()"
+            id="loadNextBtn"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+            Load next image
+          </button>
+          
+          <button
+            class="load-next-btn"
+            onclick="fetchHealthData()"
+            id="refreshDataBtn"
+            title="Refresh dashboard data"
+            style="padding: 8px;"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 2v6h-6"></path>
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+              <path d="M3 22v-6h6"></path>
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+            </svg>
+          </button>
+          <div id="statusBadge" class="status-badge">
+            <div class="status-dot"></div>
+            <span id="statusText">Connecting...</span>
+          </div>
+        </div>
+      </header>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Uptime
+          </div>
+          <div class="card-value" id="uptimeValue">--</div>
+          <div class="card-subtext" id="serverStartTimeText">Since Server Start</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="9" y1="21" x2="9" y2="9" />
+            </svg>
+            Albums Monitored
+          </div>
+          <div class="card-value" id="albumsMonitoredCount">--</div>
+          <div id="albumsMonitoredLinks" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M2 15h10" />
+              <path d="M9 18l3-3-3-3" />
+            </svg>
+            Image URLs
+          </div>
+          <div class="card-value" id="totalImagesValue">--</div>
+          <div class="card-subtext">Total images across all albums</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Blocklist
+          </div>
+          <div class="card-value" id="blocklistValue">--</div>
+          <div class="card-subtext">Videos & Unsuitable Formats</div>
+        </div>
+      </div>
+
+      <div class="images-section">
+        <div class="image-card">
+          <div class="image-header">
+            <div class="card-title" style="margin: 0">
+              Processed for e-ink display
+            </div>
+          </div>
+          <div class="image-container" id="processedContainer">
+            <div class="image-placeholder">
+              <div class="spinner"></div>
+              Loading...
+            </div>
+            <img
+              id="processedImage"
+              src=""
+              alt="Processed E-Paper Image"
+              style="
+                opacity: 0;
+                height: 100%;
+                width: 100%;
+                object-fit: cover;
+                border-radius: 0;
+              "
+              onload="this.style.opacity = 1; var placeholder = this.parentElement.querySelector('.image-placeholder'); if(placeholder) placeholder.style.display='none';"
+              onerror="handleImageError(this, 'processedContainer')"
+            />
+          </div>
+          
+          <div style="margin-top: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; display: flex; flex-direction: column; align-items: flex-start;">
+             <span id="genTimeLabel">Generated</span> <span id="genTimeValue" style="color: white; font-weight: 500;">--</span>
+          </div>
+        </div>
+
+        <div class="image-card">
+          <div class="image-header">
+            <div class="card-title" style="margin: 0">Original image</div>
+            <a
+              id="sourceLink"
+              href="#"
+              target="_blank"
+              style="
+                color: var(--accent-color);
+                font-size: 13px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              "
+            >
+              Full size
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+          </div>
+          <div class="image-container" id="originalContainer">
+            <div class="image-placeholder">
+              <div class="spinner"></div>
+              Loading...
+            </div>
+            <img
+              id="originalImage"
+              src=""
+              alt="Original Source Image"
+              style="opacity: 0"
+              onload="this.style.opacity = 1; var placeholder = this.parentElement.querySelector('.image-placeholder'); if(placeholder) placeholder.style.display='none';"
+              onerror="handleImageError(this, 'originalContainer')"
+              referrerpolicy="no-referrer"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 24px; display: grid; gap: 24px;">
+        <div class="card" style="margin: 0">
+          <div class="card-title" style="margin: 0 0 16px 0;">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
+              <path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+            Current Config
+          </div>
+          <ul class="config-list" id="configList" style="margin-top: 0;">
+            <!-- Config populated by JS -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let lastTimestamp = null;
+      let timer = null;
+      let serverOffline = false;
+
+      function formatUptime(seconds) {
+        if (!seconds || isNaN(seconds)) return "--";
+        const days = Math.floor(seconds / (3600 * 24));
+        seconds -= days * 3600 * 24;
+        const hours = Math.floor(seconds / 3600);
+        seconds -= hours * 3600;
+        const minutes = Math.floor(seconds / 60);
+
+        let result = "";
+        if (days > 0) result += days + (days === 1 ? " day " : " days ");
+        if (hours > 0) result += hours + (hours === 1 ? " hour " : " hours ");
+        if (minutes > 0) result += minutes + (minutes === 1 ? " minute" : " minutes");
+        if (result === "") result = seconds + (seconds === 1 ? " second" : " seconds");
+        return result.trim();
+      }
+
+      function formatTimeAgo(timestamp) {
+        if (!timestamp) return "--";
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        if (seconds < 60) return "Just now";
+        return formatUptime(seconds) + " ago";
+      }
+
+      function setStatus(status, isError = false) {
+        const badge = document.getElementById("statusBadge");
+        const text = document.getElementById("statusText");
+        const dot = badge.querySelector(".status-dot");
+
+        text.textContent = status;
+
+        if (isError) {
+          badge.className = "status-badge error";
+          dot.classList.remove("pulse");
+          serverOffline = true;
+        } else {
+          badge.className = "status-badge";
+          dot.classList.add("pulse");
+          serverOffline = false;
+        }
+      }
+
+      async function loadNextImage() {
+        try {
+          const loadNextButton = document.getElementById("loadNextBtn");
+          loadNextButton.style.opacity = "0.5";
+          loadNextButton.disabled = true;
+          setStatus("Generating next image...");
+
+          // Calling /image will trigger a generation if it wasn't already generated,
+          // and then it will generate the NEST image in background.
+          // However, our current logic serves NEXT_IMAGE_PATH if it exists.
+          // To FORCE a new one for this dashboard view, we'd need a specific trigger.
+          // Since the server generates the next image AFTER serving the current one,
+          // we call it once to serve current, then wait/refresh to see the new one.
+          // To make it feel better, we just call /image, then refresh health after a small delay.
+          
+          await fetch("/image");
+          
+          // Small delay to allow background task to start/finish
+          setTimeout(() => {
+            fetchHealthData();
+            loadNextButton.style.opacity = "1";
+            loadNextButton.disabled = false;
+          }, 1000);
+
+        } catch (error) {
+          console.error("Failed to load next image:", error);
+          setStatus("Error generating image", true);
+          const loadNextButton = document.getElementById("loadNextBtn");
+          loadNextButton.style.opacity = "1";
+          loadNextButton.disabled = false;
+        }
+      }
+
+      function handleImageError(imageElement, containerId) {
+        imageElement.style.display = "none";
+        const container = document.getElementById(containerId);
+        const placeholder = container.querySelector(".image-placeholder");
+        if (placeholder) {
+          placeholder.innerHTML =
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--danger-color)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style="margin-left:8px; color: var(--text-secondary)">Image unavailable</span>';
+        }
+      }
+
+      async function fetchHealthData() {
+        try {
+          const loadNextButton = document.getElementById("loadNextBtn");
+          loadNextButton.style.opacity = "0.5";
+
+          const response = await fetch("/health");
+          if (!response.ok) throw new Error("Network response was not ok");
+          const data = await response.json();
+
+          // Update Uptime
+          const uptimeElement = document.getElementById("uptimeValue");
+          uptimeElement.textContent = formatUptime(data.uptimeSeconds);
+          uptimeElement.dataset.uptime = data.uptimeSeconds;
+          if (data.serverStartTime) {
+              const startDate = new Date(data.serverStartTime);
+              const year = startDate.getFullYear();
+              const month = String(startDate.getMonth() + 1).padStart(2, '0');
+              const day = String(startDate.getDate()).padStart(2, '0');
+              const hours = String(startDate.getHours()).padStart(2, '0');
+              const minutes = String(startDate.getMinutes()).padStart(2, '0');
+              
+              document.getElementById("serverStartTimeText").textContent = 
+                  `Started ${year}-${month}-${day} ${hours}:${minutes}`;
+          }
+
+          // Update Stats
+          document.getElementById("totalImagesValue").textContent =
+            data.stats.totalCachedUrls;
+          document.getElementById("albumsMonitoredCount").textContent =
+            data.monitoredAlbums.length;
+          
+          const linksContainer = document.getElementById("albumsMonitoredLinks");
+          linksContainer.innerHTML = '';
+          data.monitoredAlbums.forEach((url, index) => {
+            const detail = data.cacheDetails && data.cacheDetails.find(d => d.url === url);
+            const count = detail ? detail.count : 0;
+            const countStr = count > 0 ? ` (${count} images)` : '';
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = "_blank";
+            link.textContent = `Album ${index + 1}${countStr}`;
+            link.style.cssText = "font-size: 12px; color: var(--accent-color); text-decoration: none; background: rgba(88, 166, 255, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(88, 166, 255, 0.2);";
+            linksContainer.appendChild(link);
+          });
+          
+          document.getElementById("blocklistValue").textContent =
+            data.stats.blocklistCount;
+
+          // Check if image updated
+          if (
+            data.lastGeneratedTimestamp &&
+            data.lastGeneratedTimestamp !== lastTimestamp
+          ) {
+            lastTimestamp = data.lastGeneratedTimestamp;
+            const cacheBuster = `?t=${Date.now()}`;
+
+            const processedImageElement = document.getElementById("processedImage");
+            processedImageElement.style.opacity = "0";
+            processedImageElement.style.display = "block";
+            const processedPlaceholder = processedImageElement.parentElement.querySelector(".image-placeholder");
+            if(processedPlaceholder) { processedPlaceholder.style.display = "flex"; processedPlaceholder.innerHTML = '<div class="spinner"></div>Loading...'; }
+            setTimeout(() => (processedImageElement.src = "/image?localPreview=true&t=" + Date.now()), 50);
+
+            const originalImageElement = document.getElementById("originalImage");
+            originalImageElement.style.opacity = "0";
+            originalImageElement.style.display = "block";
+            const originalPlaceholder = originalImageElement.parentElement.querySelector(".image-placeholder");
+            if (data.lastProcessedUrl) {
+              if(originalPlaceholder) { originalPlaceholder.style.display = "flex"; originalPlaceholder.innerHTML = '<div class="spinner"></div>Loading...'; }
+              
+              const imageWidth = data.config.width || 800;
+              const imageHeight = data.config.height || 480;
+              const landscape = data.config.landscapeOnly !== false;
+              const longestSide = landscape ? Math.max(imageWidth, Math.round(imageHeight * 16/9)) : Math.max(imageWidth, imageHeight);
+              
+              setTimeout(() => (originalImageElement.src = data.lastProcessedUrl + "=s" + longestSide), 50);
+              document.getElementById("sourceLink").href =
+                data.lastProcessedUrl + "=s0";
+              document.getElementById("sourceLink").style.display = "flex";
+            } else {
+              originalImageElement.style.display = "none";
+              document.getElementById("sourceLink").style.display = "none";
+              if (originalPlaceholder) { originalPlaceholder.style.display = "flex"; originalPlaceholder.innerHTML = "No original URL tracked yet"; }
+            }
+          }
+
+          // Keep time updated
+          document.getElementById("genTimeValue").textContent = formatTimeAgo(
+            data.lastGeneratedTimestamp,
+          );
+
+          // Update Configs
+          const configList = document.getElementById("configList");
+          configList.innerHTML = "";
+          Object.entries(data.config).forEach(([key, value]) => {
+            const listItem = document.createElement("li");
+            listItem.className = "config-item";
+            listItem.innerHTML = `<span class="config-label">${key}</span> <span class="config-value">${value}</span>`;
+            configList.appendChild(listItem);
+          });
+
+          setStatus("System Healthy", false);
+        } catch (error) {
+          console.error("Failed to fetch health data:", error);
+          setStatus("Server Offline", true);
+        } finally {
+          const loadNextButton = document.getElementById("loadNextBtn");
+          loadNextButton.style.opacity = "1";
+        }
+      }
+
+      function startTimer() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(() => {
+          // Update relative timestamps locally every second
+          if (lastTimestamp) {
+            document.getElementById("genTimeValue").textContent =
+              formatTimeAgo(lastTimestamp);
+          }
+          const uptimeElement = document.getElementById("uptimeValue");
+          if (!serverOffline && uptimeElement.dataset.uptime) {
+             uptimeElement.dataset.uptime = parseInt(uptimeElement.dataset.uptime) + 1;
+             uptimeElement.textContent = formatUptime(parseInt(uptimeElement.dataset.uptime));
+          }
+        }, 1000);
+      }
+
+      // Initialize
+      fetchHealthData();
+      startTimer();
+      let healthDataTimer = setInterval(fetchHealthData, 10000);
+    </script>
+  </body>
+</html>

@@ -1,18 +1,12 @@
 import sharp from 'sharp';
 import { ditherImage, ColorScheme, DitherMode } from '@opendisplay/epaper-dithering';
 import { create } from 'flat-cache';
-import { isLandscapeOnly } from './config.js';
+import { getConfig } from './config.js';
 
 // Blocklist (videos, portrait photos, etc.)
 export const deps = {
     blocklistCache: create({ cacheId: 'urlBlocklist', cacheDir: 'data' })
 };
-
-
-// target dimensions for 7-inch e-Paper
-// target dimensions for e-Paper (configurable)
-const WIDTH = parseInt(process.env.IMAGE_WIDTH || "800", 10);
-const HEIGHT = parseInt(process.env.IMAGE_HEIGHT || "480", 10);
 
 export function isBlocklisted(imageUrl: string): boolean {
     return !!deps.blocklistCache.getKey(imageUrl);
@@ -34,11 +28,12 @@ export async function processImage(imageUrl: string, options: any = {}): Promise
         return null;
     }
 
-    const landscapeOnly = isLandscapeOnly();
+    const config = getConfig();
+    const landscapeOnly = config.landscapeOnly;
 
     const longestSide = landscapeOnly 
-        ? Math.max(WIDTH, Math.round(HEIGHT * 16/9)) // Ensure up to 16:9 ratio fill screen height
-        : Math.max(WIDTH, HEIGHT);
+        ? Math.max(config.width, Math.round(config.height * 16/9)) // Ensure up to 16:9 ratio fill screen height
+        : Math.max(config.width, config.height);
     const resizedImageUrl = `${imageUrl}=s${longestSide}`;
 
     const controller = new AbortController();
@@ -69,8 +64,8 @@ export async function processImage(imageUrl: string, options: any = {}): Promise
     
     // Configurable cropping strategy
     // Options: 'ATTENTION', 'ENTROPY', 'CENTER', 'TOP', 'RIGHT', 'BOTTOM', 'LEFT' (case-insensitive)
-    // Default to ENV or 'CENTER'
-    const strategyName = (options.cropStrategy || process.env.CROP_STRATEGY || 'CENTER').toUpperCase();
+    // Default to config or 'CENTER'
+    const strategyName = (options.cropStrategy || config.cropStrategy).toUpperCase();
 
     // Map strategy name to sharp position/strategy
     let resizeOptions: sharp.ResizeOptions = {
@@ -93,7 +88,7 @@ export async function processImage(imageUrl: string, options: any = {}): Promise
 
     // Apply resize with calculated options
     const { data: rawBuffer, info } = await image
-      .resize(WIDTH, HEIGHT, resizeOptions)
+      .resize(config.width, config.height, resizeOptions)
       .ensureAlpha() 
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -104,16 +99,13 @@ export async function processImage(imageUrl: string, options: any = {}): Promise
         data: new Uint8ClampedArray(rawBuffer)
     };
 
-    // Determine dithering mode from env
+    // Determine dithering mode from config
     let ditherMode = DitherMode.STUCKI; // Default
-    if (process.env.DITHER_MODE) {
-        // Find matching key in DitherMode enum (case-insensitive)
-        const modeKey = Object.keys(DitherMode).find(key => key.toUpperCase() === process.env.DITHER_MODE!.toUpperCase());
-        if (modeKey) {
-            ditherMode = DitherMode[modeKey as keyof typeof DitherMode];
-        } else {
-            console.warn(`Invalid DITHER_MODE '${process.env.DITHER_MODE}', falling back to STUCKI`);
-        }
+    const modeKey = Object.keys(DitherMode).find(key => key.toUpperCase() === config.ditherMode);
+    if (modeKey) {
+        ditherMode = DitherMode[modeKey as keyof typeof DitherMode];
+    } else {
+        console.warn(`Invalid DITHER_MODE '${config.ditherMode}', falling back to STUCKI`);
     }
 
     // Apply Dithering using the library

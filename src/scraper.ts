@@ -1,6 +1,6 @@
 import { fetchImageUrls } from 'google-photos-album-image-url-fetch';
 import { scrapeGooglePhotos } from 'google-photos-scraper';
-import { isLandscapeOnly, getCacheTtlMinutes } from './config.js';
+import { getConfig } from './config.js';
 
 // Cache album data
 import { create } from 'flat-cache';
@@ -19,14 +19,14 @@ export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
   const cached = deps.albumCache.getKey(albumUrl) as { urls: string[], timestamp: number } | undefined;
   
   if (cached && cached.urls) {
-    const ttlMs = getCacheTtlMinutes() * 60 * 1000;
+    const ttlMs = getConfig().cacheTtlMinutes * 60 * 1000;
     const ageMs = Date.now() - cached.timestamp;
 
     if (ageMs < ttlMs) {
       console.log(`Using cached URLs (${cached.urls.length}) for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m)`);
       return cached.urls;
     }
-    console.log(`Cache expired for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m > TTL: ${getCacheTtlMinutes()}m). Fetching new...`);
+    console.log(`Cache expired for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m > TTL: ${getConfig().cacheTtlMinutes}m). Fetching new...`);
   } else {
     console.log(`Fetching new URLs from album ${albumUrl}...`);
   }
@@ -49,7 +49,8 @@ export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
       console.log(`Lightweight fetch found ${images.length} items.`);
 
       if (images.length < 300) {
-          const landscapeOnly = isLandscapeOnly();
+          const config = getConfig();
+          const landscapeOnly = config.landscapeOnly;
           const urls = images
             .filter(image => landscapeOnly ? image.width > image.height : true)
             .map(image => image.url);

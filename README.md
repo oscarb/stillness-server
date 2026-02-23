@@ -92,7 +92,15 @@ The service is configured via environment variables:
 
 ### `GET /image`
 
-Returns a random landscape image from the configured album, dithered and formatted for e-paper displays
+Returns a random landscape image from the configured album, dithered and formatted for e-paper displays.
+
+### `GET /dashboard`
+
+Provides a web-based dashboard for monitoring the server's status, viewing the currently processed image alongside the original and reviewing your active configuration.
+
+### `GET /health`
+
+Returns a JSON object detailing the system's operational status. This includes the server uptime, blocklist counts, current configuration details, and metrics about the album links cached.
 
 ---
 

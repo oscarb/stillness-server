@@ -3,12 +3,15 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 
-import { getAlbumImageUrls } from './scraper.js';
+import { getAlbumImageUrls, deps as scraperDeps } from './scraper.js';
 import { selectAndProcessNextImage } from './image-selector.js';
+import { deps as processorDeps } from './processor.js';
+import { getConfig } from './config.js';
 
 dotenv.config();
 
 const app = express();
+app.use(express.static('public'));
 const PORT = process.env.PORT || 3000;
 const ALBUM_URLS = process.env.SHARED_ALBUM_URL ? process.env.SHARED_ALBUM_URL.split(',').map(url => url.trim()) : [];
 const NEXT_IMAGE_PATH = path.join(process.cwd(), 'data', '_next.png');
@@ -26,6 +29,11 @@ if (!fs.existsSync(path.dirname(NEXT_IMAGE_PATH))) {
 
 
 let lastProcessedUrl: string | null = null;
+let lastGeneratedTimestamp: number | null = null;
+if (fs.existsSync(NEXT_IMAGE_PATH)) {
+    lastGeneratedTimestamp = fs.statSync(NEXT_IMAGE_PATH).mtimeMs;
+}
+const serverStartTime = Date.now();
 
 // Track active generation
 let isGenerating = false;
@@ -47,8 +55,6 @@ async function generateNextImage() {
         // Pick a random URL and try to process it
         // If processing returns null (e.g. portrait), try another one.
         // Limit retries to avoid infinite loops.
-        
-        let attempts = 0;
         const maxAttempts = 10;
 
         if(urls.length === 0) {
@@ -74,6 +80,7 @@ async function generateNextImage() {
         fs.writeFileSync(TEMP_NEXT_IMAGE_PATH, result.buffer);
         fs.renameSync(TEMP_NEXT_IMAGE_PATH, NEXT_IMAGE_PATH);
         lastProcessedUrl = result.url;
+        lastGeneratedTimestamp = Date.now();
         console.log('Next image generated and saved to ' + NEXT_IMAGE_PATH + ' (took ' + (Date.now() - startTime) + 'ms)');
     } catch (error: any) {
         console.error('Error generating next image:', error);
@@ -81,6 +88,56 @@ async function generateNextImage() {
         isGenerating = false;
     }
 }
+
+app.get('/health', (req: express.Request, res: express.Response) => {
+    try {
+        const uptimeSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+        
+        let blocklistCount = 0;
+        try {
+            blocklistCount = Object.keys(processorDeps.blocklistCache.all()).length;
+        } catch (e) {
+            console.error('Error reading blocklist cache:', e);
+        }
+
+        let albumsData: any[] = [];
+        let totalCachedUrls = 0;
+        try {
+            const albumCacheData = scraperDeps.albumCache.all();
+            for (const [url, data] of Object.entries(albumCacheData)) {
+                const typedData = data as { urls?: string[], timestamp?: number };
+                const count = typedData.urls?.length || 0;
+                totalCachedUrls += count;
+                albumsData.push({ url, count, timestamp: typedData.timestamp });
+            }
+        } catch (e) {
+            console.error('Error reading album cache:', e);
+        }
+
+        res.json({
+            status: 'ok',
+            uptimeSeconds,
+            serverStartTime,
+            lastGeneratedTimestamp,
+            lastProcessedUrl,
+            monitoredAlbums: ALBUM_URLS,
+            stats: {
+                totalCachedUrls,
+                blocklistCount,
+                albumsCached: albumsData.length
+            },
+            config: getConfig(),
+            cacheDetails: albumsData
+        });
+    } catch (error: any) {
+        console.error('Error in /health endpoint:', error);
+        res.status(500).json({ status: 'error', error: error.message });
+    }
+});
+
+app.get('/dashboard', (req: express.Request, res: express.Response) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'dashboard.html'));
+});
 
 app.get('/image', async (req: express.Request, res: express.Response) => {
   try {
@@ -115,8 +172,8 @@ app.get('/image', async (req: express.Request, res: express.Response) => {
         res.sendFile(NEXT_IMAGE_PATH);
 
         // Trigger background generation for the NEXT request
-        // Fire and forget
-        if (!isShuttingDown) {
+        // Fire and forget (unless this request was just a local preview from the dashboard)
+        if (!isShuttingDown && req.query.localPreview !== 'true') {
             generateNextImage(); 
         }
     } else {
