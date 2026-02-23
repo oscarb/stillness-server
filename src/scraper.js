@@ -13,6 +13,11 @@ const URL_CACHE_KEY = 'album_urls';
 // Prevent crashes in Docker/Non-TTY environments
 ['clearLine', 'cursorTo'].forEach(fn => process.stdout[fn] ||= () => {});
 
+export const deps = {
+    fetchImageUrls,
+    scrapeGooglePhotos
+};
+
 export async function getAlbumImageUrls(albumUrl) {
 
   const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
@@ -35,7 +40,7 @@ export async function getAlbumImageUrls(albumUrl) {
   // Try lightweight fetch
   try {
       console.log('Attempting lightweight fetch...');
-      const images = await fetchImageUrls(albumUrl);
+      const images = await deps.fetchImageUrls(albumUrl);
       
       if (!images) {
           throw new Error('Lightweight fetch returned null');
@@ -76,7 +81,7 @@ export async function getAlbumImageUrls(albumUrl) {
 async function performHeavyScrape(albumUrl) {
     try {
         console.log(`Attempting heavy scrape for album ${albumUrl}...`);
-        const imageUrls = await scrapeGooglePhotos(albumUrl);
+        const imageUrls = await deps.scrapeGooglePhotos(albumUrl);
         console.log("\n"); // Add a newline for better spacing
 
         if (!imageUrls || imageUrls.length === 0) {

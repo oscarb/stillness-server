@@ -3,7 +3,9 @@ import { ditherImage, ColorScheme, DitherMode } from '@opendisplay/epaper-dither
 import { create } from 'flat-cache';
 
 // Blocklist (videos, portrait photos, etc.)
-const blocklistCache = create({ cacheId: 'urlBlocklist', cacheDir: 'data' });
+export const deps = {
+    blocklistCache: create({ cacheId: 'urlBlocklist', cacheDir: 'data' })
+};
 
 
 // target dimensions for 7-inch e-Paper
@@ -14,7 +16,7 @@ const HEIGHT = parseInt(process.env.IMAGE_HEIGHT) || 480;
 export async function processImage(imageUrl, options = {}) {
   try {
     // Check blocklist first
-    const inBlocklist = blocklistCache.getKey(imageUrl);
+    const inBlocklist = deps.blocklistCache.getKey(imageUrl);
     if (inBlocklist) {
         console.log(`Skipping image: ${imageUrl} is in blocklist`);
         return null;
@@ -23,8 +25,8 @@ export async function processImage(imageUrl, options = {}) {
     // Check if it's a video
     if (await isVideo(imageUrl)) {
         console.log(`Skipping image: Detected ${imageUrl} as video/motion photo`);
-        blocklistCache.setKey(imageUrl, true);
-        blocklistCache.save(true);
+        deps.blocklistCache.setKey(imageUrl, true);
+        deps.blocklistCache.save(true);
         return null;
     }
 
@@ -45,8 +47,8 @@ export async function processImage(imageUrl, options = {}) {
 
     if (landscapeOnly && metadata.height >= metadata.width) {
       console.log(`Skipping image: Portrait or square orientation (${metadata.width}x${metadata.height})`);
-      blocklistCache.setKey(imageUrl, true);
-      blocklistCache.save(true);
+      deps.blocklistCache.setKey(imageUrl, true);
+      deps.blocklistCache.save(true);
       return null;
     }
     
