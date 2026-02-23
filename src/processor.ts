@@ -155,9 +155,6 @@ export async function processImage(imageUrl: string, options: any = {}): Promise
       }
     })
     .png({
-      palette: true, 
-      // @ts-ignore
-      bitdepth: 1, 
       colors: 2, 
       effort: 10,
       compressionLevel: 9
