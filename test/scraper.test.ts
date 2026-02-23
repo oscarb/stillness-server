@@ -5,8 +5,8 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Scraper Tests', () => {
-    let fetchImageUrlsMock;
-    let scrapeGooglePhotosMock;
+    let fetchImageUrlsMock: any;
+    let scrapeGooglePhotosMock: any;
 
     beforeEach(() => {
         // Create mock functions

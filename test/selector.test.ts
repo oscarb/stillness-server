@@ -3,8 +3,8 @@ import assert from 'node:assert';
 import { selectAndProcessNextImage, deps } from '../src/image-selector.js';
 
 describe('Image Selector Edge Cases Tests', () => {
-    let processImageMock;
-    let isBlocklistedMock;
+    let processImageMock: any;
+    let isBlocklistedMock: any;
 
     beforeEach(() => {
         processImageMock = mock.fn();
@@ -43,13 +43,13 @@ describe('Image Selector Edge Cases Tests', () => {
         
         // Ensure it doesn't skip it and return null
         assert.notStrictEqual(result, null);
-        assert.strictEqual(result.url, validUrl);
+        assert.strictEqual(result!.url, validUrl);
         assert.strictEqual(processImageMock.mock.callCount(), 1);
     });
 
     it('should try blocklisted/failing URLs and eventually return null if all active tests fail', async () => {
         // Blocklist traps one immediately
-        isBlocklistedMock.mock.mockImplementation((url) => url === 'http://bad.com');
+        isBlocklistedMock.mock.mockImplementation((url: string) => url === 'http://bad.com');
         
         // Simulating the actual processImage failing inside the retries (e.g., video caught late)
         processImageMock.mock.mockImplementation(async () => null); 
@@ -70,6 +70,6 @@ describe('Image Selector Edge Cases Tests', () => {
         const result = await selectAndProcessNextImage([prevUrl, newUrl], prevUrl, false);
         
         assert.notStrictEqual(result, null);
-        assert.strictEqual(result.url, newUrl); // It must pick the new one, since they both are valid
+        assert.strictEqual(result!.url, newUrl); // It must pick the new one, since they both are valid
     });
 });

@@ -25,7 +25,7 @@ if (!fs.existsSync(path.dirname(NEXT_IMAGE_PATH))) {
 }
 
 
-let lastProcessedUrl = null;
+let lastProcessedUrl: string | null = null;
 
 // Track active generation
 let isGenerating = false;
@@ -50,7 +50,6 @@ async function generateNextImage() {
         
         let attempts = 0;
         const maxAttempts = 10;
-        let pngBuffer;
 
         if(urls.length === 0) {
             console.error('No URLs found in album');
@@ -76,14 +75,14 @@ async function generateNextImage() {
         fs.renameSync(TEMP_NEXT_IMAGE_PATH, NEXT_IMAGE_PATH);
         lastProcessedUrl = result.url;
         console.log('Next image generated and saved to ' + NEXT_IMAGE_PATH + ' (took ' + (Date.now() - startTime) + 'ms)');
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating next image:', error);
     } finally {
         isGenerating = false;
     }
 }
 
-app.get('/image', async (req, res) => {
+app.get('/image', async (req: express.Request, res: express.Response) => {
   try {
     const startTime = Date.now();
     res.on('finish', () => {
@@ -124,7 +123,7 @@ app.get('/image', async (req, res) => {
         res.status(500).send('Failed to serve image');
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Server Error:', error);
     res.status(500).send('Internal Server Error');
   }
@@ -143,7 +142,7 @@ const server = app.listen(PORT, async () => {
   }
 });
 
-function gracefulShutdown(signal) {
+function gracefulShutdown(signal: string) {
     console.log(`${signal} signal received: closing HTTP server`);
     isShuttingDown = true;
     

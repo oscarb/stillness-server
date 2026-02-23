@@ -12,18 +12,18 @@ const urlCache = new NodeCache({ stdTTL: 3600 });
 const URL_CACHE_KEY = 'album_urls';
 
 // Prevent crashes in Docker/Non-TTY environments
-['clearLine', 'cursorTo'].forEach(fn => process.stdout[fn] ||= () => {});
+['clearLine', 'cursorTo'].forEach((fn: string) => (process.stdout as any)[fn] ||= () => {});
 
 export const deps = {
     fetchImageUrls,
     scrapeGooglePhotos
 };
 
-export async function getAlbumImageUrls(albumUrl) {
+export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
 
   const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
   // Check url cache first
-  const cachedUrls = urlCache.get(urlCacheKey);
+  const cachedUrls = urlCache.get(urlCacheKey) as string[] | undefined;
   if (cachedUrls) {
     console.log(`Using cached URLs (${cachedUrls.length}) for album ${albumUrl}`);
     return cachedUrls;
@@ -32,7 +32,7 @@ export async function getAlbumImageUrls(albumUrl) {
   console.log(`Fetching new URLs from album ${albumUrl}...`);
 
   // Check if we already know this is a large album
-  const albumMetaData = albumMetaDataCache.getKey(albumUrl);
+  const albumMetaData = albumMetaDataCache.getKey(albumUrl) as { size: number } | undefined;
   if (albumMetaData && albumMetaData.size >= 300) {
       console.log('Album previously identified as large (>=300). Using scraper directly.');
       return await performHeavyScrape(albumUrl);
@@ -71,7 +71,7 @@ export async function getAlbumImageUrls(albumUrl) {
       
        console.log('Hit 300-image limit. Switching to heavy scraper for full album...');
 
-  } catch (error) {
+  } catch (error: any) {
        console.error('Lightweight fetch failed or suspect (Error: ' + error.message + '). Switching to fallback scraper.');
   }
 
@@ -79,7 +79,7 @@ export async function getAlbumImageUrls(albumUrl) {
   return await performHeavyScrape(albumUrl);
 }
 
-async function performHeavyScrape(albumUrl) {
+async function performHeavyScrape(albumUrl: string): Promise<string[]> {
     try {
         console.log(`Attempting heavy scrape for album ${albumUrl}...`);
         const imageUrls = await deps.scrapeGooglePhotos(albumUrl);

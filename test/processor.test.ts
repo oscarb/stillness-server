@@ -4,14 +4,14 @@ import { processImage, deps } from '../src/processor.js';
 import sharp from 'sharp';
 
 describe('Processor Tests', () => {
-    let fetchMock;
+    let fetchMock: any;
 
     beforeEach(() => {
         // Mock global fetch
         fetchMock = mock.method(global, 'fetch');
         
         // Mock blocklist cache to avoid mutating real data
-        deps.blocklistCache = {
+        (deps as any).blocklistCache = {
             getKey: mock.fn(() => null),
             setKey: mock.fn(),
             save: mock.fn()
@@ -28,7 +28,7 @@ describe('Processor Tests', () => {
 
     it('should identify and skip videos', async () => {
         // First fetch is for isVideo check: returns ok = true (is a video)
-        fetchMock.mock.mockImplementation(async (_url, options) => {
+        fetchMock.mock.mockImplementation(async (_url: string, options: any) => {
             if (options && options.method === 'HEAD') {
                 return { ok: true };
             }
@@ -37,13 +37,13 @@ describe('Processor Tests', () => {
 
         const result = await processImage('http://example.com/video');
         assert.strictEqual(result, null);
-        assert.strictEqual(deps.blocklistCache.setKey.mock.callCount(), 1);
-        const args = deps.blocklistCache.setKey.mock.calls[0].arguments;
+        assert.strictEqual((deps.blocklistCache as any).setKey.mock.callCount(), 1);
+        const args = (deps.blocklistCache as any).setKey.mock.calls[0].arguments;
         assert.strictEqual(args[0], 'http://example.com/video');
     });
 
     it('should skip images already in blocklist', async () => {
-        deps.blocklistCache.getKey.mock.mockImplementation(() => true);
+        (deps.blocklistCache as any).getKey.mock.mockImplementation(() => true);
 
         const result = await processImage('http://example.com/blocked');
         assert.strictEqual(result, null);
@@ -55,7 +55,7 @@ describe('Processor Tests', () => {
         
         // Return not-a-video for HEAD
         // Return a 1x2 image (portrait) for GET
-        fetchMock.mock.mockImplementation(async (_url, options) => {
+        fetchMock.mock.mockImplementation(async (_url: string, options: any) => {
             if (options && options.method === 'HEAD') {
                 return { ok: false };
             }
@@ -73,7 +73,7 @@ describe('Processor Tests', () => {
 
         const result = await processImage('http://example.com/portrait');
         assert.strictEqual(result, null);
-        assert.strictEqual(deps.blocklistCache.setKey.mock.callCount(), 1);
+        assert.strictEqual((deps.blocklistCache as any).setKey.mock.callCount(), 1);
     });
 
     it('should process landscape images successfully', async () => {
@@ -81,7 +81,7 @@ describe('Processor Tests', () => {
         process.env.IMAGE_WIDTH = '800';
         process.env.IMAGE_HEIGHT = '480';
         
-        fetchMock.mock.mockImplementation(async (_url, options) => {
+        fetchMock.mock.mockImplementation(async (_url: string, options: any) => {
             if (options && options.method === 'HEAD') {
                 return { ok: false };
             }
@@ -98,7 +98,7 @@ describe('Processor Tests', () => {
 
         const result = await processImage('http://example.com/landscape', { cropStrategy: 'CENTER' });
         assert.notStrictEqual(result, null);
-        assert.strictEqual(result.mimeType, 'image/png');
-        assert.ok(result.data.length > 0);
+        assert.strictEqual(result!.mimeType, 'image/png');
+        assert.ok(result!.data.length > 0);
     });
 });

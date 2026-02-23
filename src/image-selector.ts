@@ -5,7 +5,7 @@ export const deps = {
     isBlocklisted
 };
 
-export async function selectAndProcessNextImage(urls, lastProcessedUrl, isShuttingDown, maxAttempts = 10) {
+export async function selectAndProcessNextImage(urls: string[], lastProcessedUrl: string | null, isShuttingDown: boolean, maxAttempts = 10): Promise<{ buffer: Buffer; url: string } | null> {
     if (!urls || urls.length === 0) {
         return null;
     }

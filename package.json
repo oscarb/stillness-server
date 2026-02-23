@@ -5,10 +5,11 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
-    "test": "node --test test/**/*.test.js",
-    "test:watch": "node --test --watch test/**/*.test.js"
+    "start": "node dist/src/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "tsx --test test/**/*.test.ts",
+    "test:watch": "tsx --test --watch test/**/*.test.ts"
   },
   "keywords": [],
   "author": "oscarb",
@@ -25,5 +26,11 @@
     "google-photos-album-image-url-fetch": "^3.2.0",
     "google-photos-scraper": "^1.0.0",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

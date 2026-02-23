@@ -11,14 +11,14 @@ export const deps = {
 
 // target dimensions for 7-inch e-Paper
 // target dimensions for e-Paper (configurable)
-const WIDTH = parseInt(process.env.IMAGE_WIDTH) || 800;
-const HEIGHT = parseInt(process.env.IMAGE_HEIGHT) || 480;
+const WIDTH = parseInt(process.env.IMAGE_WIDTH || "800", 10);
+const HEIGHT = parseInt(process.env.IMAGE_HEIGHT || "480", 10);
 
-export function isBlocklisted(imageUrl) {
+export function isBlocklisted(imageUrl: string): boolean {
     return !!deps.blocklistCache.getKey(imageUrl);
 }
 
-export async function processImage(imageUrl, options = {}) {
+export async function processImage(imageUrl: string, options: any = {}): Promise<{ data: Buffer; mimeType: string } | null> {
   try {
     // Check blocklist first
     if (isBlocklisted(imageUrl)) {
@@ -73,8 +73,8 @@ export async function processImage(imageUrl, options = {}) {
     const strategyName = (options.cropStrategy || process.env.CROP_STRATEGY || 'CENTER').toUpperCase();
 
     // Map strategy name to sharp position/strategy
-    let resizeOptions = {
-        fit: 'cover',
+    let resizeOptions: sharp.ResizeOptions = {
+        fit: sharp.fit.cover,
         position: 'center' // Default
     };
 
@@ -108,9 +108,9 @@ export async function processImage(imageUrl, options = {}) {
     let ditherMode = DitherMode.STUCKI; // Default
     if (process.env.DITHER_MODE) {
         // Find matching key in DitherMode enum (case-insensitive)
-        const modeKey = Object.keys(DitherMode).find(key => key.toUpperCase() === process.env.DITHER_MODE.toUpperCase());
+        const modeKey = Object.keys(DitherMode).find(key => key.toUpperCase() === process.env.DITHER_MODE!.toUpperCase());
         if (modeKey) {
-            ditherMode = DitherMode[modeKey];
+            ditherMode = DitherMode[modeKey as keyof typeof DitherMode];
         } else {
             console.warn(`Invalid DITHER_MODE '${process.env.DITHER_MODE}', falling back to STUCKI`);
         }
@@ -156,6 +156,7 @@ export async function processImage(imageUrl, options = {}) {
     })
     .png({
       palette: true, 
+      // @ts-ignore
       bitdepth: 1, 
       colors: 2, 
       effort: 10,
@@ -176,7 +177,7 @@ export async function processImage(imageUrl, options = {}) {
   }
 }
 
-async function isVideo(baseUrl) {
+async function isVideo(baseUrl: string): Promise<boolean> {
   try {
     // Attempt to access the video stream (Download Video)
     // If this returns 200 OK, it's likely a video or a motion photo.
