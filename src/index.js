@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getAlbumImageUrls } from './scraper.js';
-import { processImage, isBlocklisted } from './processor.js';
+import { selectAndProcessNextImage } from './image-selector.js';
 
 dotenv.config();
 
@@ -52,62 +52,29 @@ async function generateNextImage() {
         const maxAttempts = 10;
         let pngBuffer;
 
-        if(urls.length == 0) {
+        if(urls.length === 0) {
             console.error('No URLs found in album');
             return;
         }
 
-        const validUrls = urls.filter(url => !isBlocklisted(url));
-        const filteredCount = urls.length - validUrls.length;
+        console.log(`Found ${urls.length} total images in ${ALBUM_URLS.length === 1 ? 'one album' : ALBUM_URLS.length + ' albums'}`);
 
-        console.log(`Found ${urls.length} total images in ${ALBUM_URLS.length === 1 ? 'one album' : ALBUM_URLS.length + ' albums'} ` +
-                    `${filteredCount > 0 ? `(ignored ${filteredCount} blocklisted)` : ''}`);
-
-        if (validUrls.length === 0) {
-            console.error('No valid URLs left after filtering blocklisted images');
-            return;
-        }
-
-        const usedIndices = new Set();
-
-        while (attempts < maxAttempts && !isShuttingDown && usedIndices.size < validUrls.length) {
-            const index = Math.floor(Math.random() * validUrls.length);
-            if (usedIndices.has(index)) continue;
-            usedIndices.add(index);
-
-            const url = validUrls[index];
-
-            if(url === lastProcessedUrl && urls.length > 1) {
-                console.log('Skipping image (same as last processed)');
-                continue;
-            }
-
-            // Process
-            console.log(`Processing image (attempt ${attempts + 1}/${maxAttempts})...`);
-            let result = await processImage(url);
-            
-            if (result) {
-                pngBuffer = result.data;
-                lastProcessedUrl = url;
-                break;
-            }
-            
-            attempts++;
-        }
+        const result = await selectAndProcessNextImage(urls, lastProcessedUrl, isShuttingDown, maxAttempts);
 
         if (isShuttingDown) {
             console.log('Generation aborted due to shutdown.');
             return;
         }
 
-        if (!pngBuffer) {
+        if (!result) {
             console.error('Failed to generate next image after max attempts.');
             return;
         }
 
         // Write to temp file then rename for atomic update
-        fs.writeFileSync(TEMP_NEXT_IMAGE_PATH, pngBuffer);
+        fs.writeFileSync(TEMP_NEXT_IMAGE_PATH, result.buffer);
         fs.renameSync(TEMP_NEXT_IMAGE_PATH, NEXT_IMAGE_PATH);
+        lastProcessedUrl = result.url;
         console.log('Next image generated and saved to ' + NEXT_IMAGE_PATH + ' (took ' + (Date.now() - startTime) + 'ms)');
     } catch (error) {
         console.error('Error generating next image:', error);
