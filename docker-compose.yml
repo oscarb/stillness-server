@@ -11,6 +11,8 @@ services:
       - IMAGE_WIDTH=${IMAGE_WIDTH}
       - IMAGE_HEIGHT=${IMAGE_HEIGHT}
       - LANDSCAPE_ONLY=${LANDSCAPE_ONLY}
+      - CACHE_TTL_MINUTES=${CACHE_TTL_MINUTES}
+      - CROP_STRATEGY=${CROP_STRATEGY}
       - PORT=3000
     volumes:
-      - ./data:/app/data # For potential persistence if we moved cache to disk, though currently in-memory.
+      - ./data:/app/data # Used for cache persistence
