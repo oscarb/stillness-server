@@ -1,0 +1,12 @@
+node_modules
+data
+dither-test
+.git
+.github
+.env
+.env.sample
+*.md
+test
+scripts
+Dockerfile
+docker-compose.yml
