@@ -38,7 +38,16 @@ export async function processImage(imageUrl, options = {}) {
         : Math.max(WIDTH, HEIGHT);
     const resizedImageUrl = `${imageUrl}=s${longestSide}`;
 
-    const response = await fetch(resizedImageUrl);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+    let response;
+    try {
+        response = await fetch(resizedImageUrl, { signal: controller.signal });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+
     const arrayBuffer = await response.arrayBuffer();
     const inputBuffer = Buffer.from(arrayBuffer);
     const image = sharp(inputBuffer);
@@ -166,7 +175,16 @@ async function isVideo(baseUrl) {
   try {
     // Attempt to access the video stream (Download Video)
     // If this returns 200 OK, it's likely a video or a motion photo.
-    const response = await fetch(`${baseUrl}=dv`, { method: 'HEAD' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
+    let response;
+    try {
+      response = await fetch(`${baseUrl}=dv`, { method: 'HEAD', signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (response.ok) {
       return true;
     }
