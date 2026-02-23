@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { getAlbumImageUrls } from './scraper.js';
-import { processImage } from './processor.js';
+import { processImage, isBlocklisted } from './processor.js';
 
 dotenv.config();
 
@@ -57,11 +57,25 @@ async function generateNextImage() {
             return;
         }
 
-        console.log('Found ' + urls.length + ' images in ' + (ALBUM_URLS.length === 1 ? ' one album' : ALBUM_URLS.length + ' albums'));
+        const validUrls = urls.filter(url => !isBlocklisted(url));
+        const filteredCount = urls.length - validUrls.length;
 
-        while (attempts < maxAttempts && !isShuttingDown) {
-            const randomIndex = Math.floor(Math.random() * urls.length);
-            const url = urls[randomIndex];
+        console.log(`Found ${urls.length} total images in ${ALBUM_URLS.length === 1 ? 'one album' : ALBUM_URLS.length + ' albums'} ` +
+                    `${filteredCount > 0 ? `(ignored ${filteredCount} blocklisted)` : ''}`);
+
+        if (validUrls.length === 0) {
+            console.error('No valid URLs left after filtering blocklisted images');
+            return;
+        }
+
+        const usedIndices = new Set();
+
+        while (attempts < maxAttempts && !isShuttingDown && usedIndices.size < validUrls.length) {
+            const index = Math.floor(Math.random() * validUrls.length);
+            if (usedIndices.has(index)) continue;
+            usedIndices.add(index);
+
+            const url = validUrls[index];
 
             if(url === lastProcessedUrl && urls.length > 1) {
                 console.log('Skipping image (same as last processed)');

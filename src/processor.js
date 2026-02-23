@@ -14,11 +14,14 @@ export const deps = {
 const WIDTH = parseInt(process.env.IMAGE_WIDTH) || 800;
 const HEIGHT = parseInt(process.env.IMAGE_HEIGHT) || 480;
 
+export function isBlocklisted(imageUrl) {
+    return !!deps.blocklistCache.getKey(imageUrl);
+}
+
 export async function processImage(imageUrl, options = {}) {
   try {
     // Check blocklist first
-    const inBlocklist = deps.blocklistCache.getKey(imageUrl);
-    if (inBlocklist) {
+    if (isBlocklisted(imageUrl)) {
         console.log(`Skipping image: ${imageUrl} is in blocklist`);
         return null;
     }
