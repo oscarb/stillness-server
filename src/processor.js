@@ -53,7 +53,9 @@ export async function processImage(imageUrl, options = {}) {
 
     const arrayBuffer = await response.arrayBuffer();
     const inputBuffer = Buffer.from(arrayBuffer);
-    const image = sharp(inputBuffer);
+    
+    // Call rotate() to automatically useEXIF Orientation tag before getting metadata
+    const image = sharp(inputBuffer).rotate();
     
     // Check orientation
     const metadata = await image.metadata();
