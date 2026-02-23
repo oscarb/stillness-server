@@ -1,39 +1,38 @@
-import NodeCache from '@cacheable/node-cache';
 import { fetchImageUrls } from 'google-photos-album-image-url-fetch';
 import { scrapeGooglePhotos } from 'google-photos-scraper';
-import { isLandscapeOnly } from './config.js';
+import { isLandscapeOnly, getCacheTtlMinutes } from './config.js';
 
-// Cache album meta data
+// Cache album data
 import { create } from 'flat-cache';
-const albumMetaDataCache = create({ cacheId: 'albumMetaData', cacheDir: 'data' });
+const albumCache = create({ cacheId: 'albumCache', cacheDir: 'data' });
 
-// Cache URLs for 1 hour (3600 seconds)
-const urlCache = new NodeCache({ stdTTL: 3600 });
-const URL_CACHE_KEY = 'album_urls';
+export const deps = {
+    fetchImageUrls,
+    scrapeGooglePhotos,
+    albumCache // Exported for testing purposes
+};
 
 // Prevent crashes in Docker/Non-TTY environments
 ['clearLine', 'cursorTo'].forEach((fn: string) => (process.stdout as any)[fn] ||= () => {});
 
-export const deps = {
-    fetchImageUrls,
-    scrapeGooglePhotos
-};
-
 export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
+  const cached = deps.albumCache.getKey(albumUrl) as { urls: string[], timestamp: number } | undefined;
+  
+  if (cached && cached.urls) {
+    const ttlMs = getCacheTtlMinutes() * 60 * 1000;
+    const ageMs = Date.now() - cached.timestamp;
 
-  const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
-  // Check url cache first
-  const cachedUrls = urlCache.get(urlCacheKey) as string[] | undefined;
-  if (cachedUrls) {
-    console.log(`Using cached URLs (${cachedUrls.length}) for album ${albumUrl}`);
-    return cachedUrls;
+    if (ageMs < ttlMs) {
+      console.log(`Using cached URLs (${cached.urls.length}) for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m)`);
+      return cached.urls;
+    }
+    console.log(`Cache expired for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m > TTL: ${getCacheTtlMinutes()}m). Fetching new...`);
+  } else {
+    console.log(`Fetching new URLs from album ${albumUrl}...`);
   }
 
-  console.log(`Fetching new URLs from album ${albumUrl}...`);
-
-  // Check if we already know this is a large album
-  const albumMetaData = albumMetaDataCache.getKey(albumUrl) as { size: number } | undefined;
-  if (albumMetaData && albumMetaData.size >= 300) {
+  // Check if we already know this is a large album based on previous cache size
+  if (cached && cached.urls && cached.urls.length >= 300) {
       console.log('Album previously identified as large (>=300). Using scraper directly.');
       return await performHeavyScrape(albumUrl);
   }
@@ -49,27 +48,22 @@ export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
 
       console.log(`Lightweight fetch found ${images.length} items.`);
 
-      // Check if we hit the ~300 limit (typical limit for this library / initial page load)
-      // If we got exactly 0, it might be empty or error, but let's assume valid.
-      // If we validly got < 300, we proceed. 
       if (images.length < 300) {
-          // Success! Map to URLs and return.
           const landscapeOnly = isLandscapeOnly();
           const urls = images
             .filter(image => landscapeOnly ? image.width > image.height : true)
             .map(image => image.url);
           
           console.log(`Using ${urls.length} images from lightweight fetch for album ${albumUrl}.`);
-          urlCache.set(urlCacheKey, urls);
-
-          // Update album metadata
-          albumMetaDataCache.setKey(albumUrl, { size: images.length });
-          albumMetaDataCache.save(true);
+          
+          // Update cache with URLs and current timestamp
+          deps.albumCache.setKey(albumUrl, { urls, timestamp: Date.now() });
+          deps.albumCache.save(true);
 
           return urls;
       }
       
-       console.log('Hit 300-image limit. Switching to heavy scraper for full album...');
+      console.log('Hit 300-image limit. Switching to heavy scraper for full album...');
 
   } catch (error: any) {
        console.error('Lightweight fetch failed or suspect (Error: ' + error.message + '). Switching to fallback scraper.');
@@ -88,12 +82,10 @@ async function performHeavyScrape(albumUrl: string): Promise<string[]> {
         if (!imageUrls || imageUrls.length === 0) {
             throw new Error(`No imageUrls found in album (Scraper) ${albumUrl}`);
         }
-        const urlCacheKey = `${URL_CACHE_KEY}_${albumUrl}`;
-        urlCache.set(urlCacheKey, imageUrls);
 
-        // Update album metadata
-        albumMetaDataCache.setKey(albumUrl, { size: imageUrls.length });
-        albumMetaDataCache.save(true);
+        // Update cache
+        deps.albumCache.setKey(albumUrl, { urls: imageUrls, timestamp: Date.now() });
+        deps.albumCache.save(true);
 
         return imageUrls;
     } catch (error) {

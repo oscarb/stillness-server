@@ -18,10 +18,8 @@ describe('Scraper Tests', () => {
         deps.scrapeGooglePhotos = scrapeGooglePhotosMock;
 
         // Clear out any cached data if necessary
-        const nextImagePath = path.join(process.cwd(), 'data', 'albumMetaData');
-        if (fs.existsSync(nextImagePath)) {
-            // We'll let flat-cache do its thing or we can remove the whole folder, but it's okay for these tests to rely on memory cache and fresh runs.
-        }
+        const keys = deps.albumCache.keys() || [];
+        keys.forEach((k: string) => deps.albumCache.removeKey(k));
     });
 
     afterEach(() => {
