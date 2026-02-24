@@ -1,12 +1,14 @@
 diff --git a/node_modules/google-photos-scraper/dist/photos.js b/node_modules/google-photos-scraper/dist/photos.js
-index 02f2c9d..0953018 100755
+index 02f2c9d..07faf1c 100755
 --- a/node_modules/google-photos-scraper/dist/photos.js
 +++ b/node_modules/google-photos-scraper/dist/photos.js
-@@ -10,7 +10,7 @@ const fs_1 = require("fs");
+@@ -9,8 +9,8 @@ const playwright_1 = require("playwright");
+ const fs_1 = require("fs");
  // Configuration
  const CONFIG = {
-     maxNoNewPhotos: 50,
+-    maxNoNewPhotos: 50,
 -    maxScrollAttempts: 300,
++    maxNoNewPhotos: 200,
 +    maxScrollAttempts: 3000,
      scrollDelay: 200,
      initialLoadDelay: 500,
