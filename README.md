@@ -77,16 +77,19 @@ Your service should now be running at `http://localhost:3000/image`.
 
 The service is configured via environment variables:
 
-| Variable            | Description                                                                     | Default  |
-| :------------------ | :------------------------------------------------------------------------------ | :------- |
-| `SHARED_ALBUM_URL`  | **Required**. A comma-separated list of public Google Photos shared album URLs. | -        |
-| `PORT`              | The port the server will listen on.                                             | `3000`   |
-| `IMAGE_WIDTH`       | Target width of the generated e-ink image.                                      | `800`    |
-| `IMAGE_HEIGHT`      | Target height of the generated e-ink image.                                     | `480`    |
-| `DITHER_MODE`       | Algorithm used for dithering (e.g., `STUCKI`, `FLOYDSTEINBERG`, etc.).          | `STUCKI` |
-| `LANDSCAPE_ONLY`    | Whether to automatically skip portrait and square images (`true`/`false`).      | `true`   |
-| `CROP_STRATEGY`     | How to crop images (`CENTER`, `ATTENTION`, `ENTROPY`, `TOP`, `LEFT`, etc.).     | `CENTER` |
-| `CACHE_TTL_MINUTES` | How often to check for new images in the album (in minutes).                    | `60`     |
+| Variable                      | Description                                                                     | Default  |
+| :---------------------------- | :------------------------------------------------------------------------------ | :------- |
+| `SHARED_ALBUM_URL`            | **Required**. A comma-separated list of public Google Photos shared album URLs. | -        |
+| `PORT`                        | The port the server will listen on.                                             | `3000`   |
+| `IMAGE_WIDTH`                 | Target width of the generated e-ink image.                                      | `800`    |
+| `IMAGE_HEIGHT`                | Target height of the generated e-ink image.                                     | `480`    |
+| `DITHER_MODE`                 | Algorithm used for dithering (e.g., `STUCKI`, `FLOYDSTEINBERG`, etc.).          | `STUCKI` |
+| `LANDSCAPE_ONLY`              | Whether to automatically skip portrait and square images (`true`/`false`).      | `true`   |
+| `CROP_STRATEGY`               | How to crop images (`CENTER`, `ATTENTION`, `ENTROPY`, `TOP`, `LEFT`, etc.).     | `CENTER` |
+| `CACHE_TTL_MINUTES`           | How often to check for new images in the album (in minutes).                    | `60`     |
+| `SCRAPER_MAX_NO_NEW_PHOTOS`   | Scraper timeout: Max scroll attempts without finding new photos before exiting. | `200`    |
+| `SCRAPER_MAX_SCROLL_ATTEMPTS` | Scraper global limit: Absolute maximum number of scroll attempts for an album.  | `3000`   |
+| `SCRAPER_SCROLL_DELAY`        | Wait time in ms between scraper scroll attempts to allow rendering.             | `200`    |
 
 ## 📡 API Reference
 
