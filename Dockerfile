@@ -20,8 +20,9 @@ RUN npx playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /ms-playwright/firefox* /ms-playwright/webkit*
 
-# Copy compiled source code
+# Copy compiled source code and public assets
 COPY --from=builder /app/dist ./dist
+COPY public ./public
 
 EXPOSE 3000
 
