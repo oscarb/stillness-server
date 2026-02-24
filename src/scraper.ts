@@ -23,10 +23,10 @@ export async function getAlbumImageUrls(albumUrl: string): Promise<string[]> {
     const ageMs = Date.now() - cached.timestamp;
 
     if (ageMs < ttlMs) {
-      console.log(`Using cached URLs (${cached.urls.length}) for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m)`);
+      console.log(`Using cached URLs (${cached.urls.length}) for album ${albumUrl} (in cache for ${Math.round(ageMs/60000)} minutes)`);
       return cached.urls;
     }
-    console.log(`Cache expired for album ${albumUrl} (Age: ${Math.round(ageMs/60000)}m > TTL: ${getConfig().cacheTtlMinutes}m). Fetching new...`);
+    console.log(`Cache expired for album ${albumUrl} (in cache for ${Math.round(ageMs/60000)} minutes > TTL: ${getConfig().cacheTtlMinutes} minutes). Fetching new...`);
   } else {
     console.log(`Fetching new URLs from album ${albumUrl}...`);
   }

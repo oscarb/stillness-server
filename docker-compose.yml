@@ -1,18 +1,12 @@
 services:
-  app:
+  stillness:
     build: .
     container_name: stillness
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file: .env
     environment:
-      - SHARED_ALBUM_URL=${SHARED_ALBUM_URL}
-      - DITHER_MODE=${DITHER_MODE}
-      - IMAGE_WIDTH=${IMAGE_WIDTH}
-      - IMAGE_HEIGHT=${IMAGE_HEIGHT}
-      - LANDSCAPE_ONLY=${LANDSCAPE_ONLY}
-      - CACHE_TTL_MINUTES=${CACHE_TTL_MINUTES}
-      - CROP_STRATEGY=${CROP_STRATEGY}
       - PORT=3000
     volumes:
       - ./data:/app/data # Used for cache persistence
